@@ -1,6 +1,4 @@
-"use client";
-
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState } from "react";
 
 // Create the context
 const GlobalContext = createContext({
@@ -8,11 +6,14 @@ const GlobalContext = createContext({
   setShouldDisplayCart: () => {},
   cartCount: 0,
   setCartCount: () => {},
+  cartItems: [],
+  setCartItems: () => {},
 });
 
 export const GlobalContextProvider = ({ children }) => {
   const [shouldDisplayCart, setShouldDisplayCart] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [cartItems, setCartItems] = useState([]);
 
   return (
     <GlobalContext.Provider
@@ -21,6 +22,8 @@ export const GlobalContextProvider = ({ children }) => {
         setShouldDisplayCart,
         cartCount,
         setCartCount,
+        cartItems,
+        setCartItems,
       }}
     >
       {children}
