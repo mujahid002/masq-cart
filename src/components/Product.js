@@ -1,8 +1,26 @@
+import { useGlobalContext } from "@/context/Store";
 import { useState } from "react";
 
 export default function Product({ product }) {
+  const { setCartCount, setShouldDisplayCart, setCartItems } =
+    useGlobalContext(); // Assuming you have a setCartItems function in your context
   const { name, price, emoji } = product;
   const [quantity, setQuantity] = useState(1);
+
+  const addItemToCart = () => {
+    // Create a new item object
+    const newItem = {
+      name: name,
+      price: price,
+      quantity: quantity,
+    };
+
+    // Update the cart count
+    setCartCount((prevCount) => prevCount + quantity);
+
+    // Update the cart items array
+    setCartItems((prevItems) => [...prevItems, newItem]);
+  };
 
   const decreaseQuantity = () => {
     if (quantity > 1) {
@@ -34,7 +52,13 @@ export default function Product({ product }) {
           +
         </button>
       </div>
-      <button className="bg-emerald-50 hover:bg-emerald-500 hover:text-white transition-colors duration-500 text-emerald-500 rounded-md px-5 py-2">
+      <button
+        onClick={() => {
+          addItemToCart();
+          setShouldDisplayCart(true);
+        }} // Call the addItemToCart function when the button is clicked
+        className="bg-emerald-50 hover:bg-emerald-500 hover:text-white transition-colors duration-500 text-emerald-500 rounded-md px-5 py-2"
+      >
         Add to cart
       </button>
     </article>
