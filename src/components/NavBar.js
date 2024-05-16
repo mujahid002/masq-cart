@@ -10,7 +10,7 @@ export default function NavBar() {
     <nav className="py-5 px-12 flex justify-between">
       <Link href="/">
         <p className="bg-white text-3xl font-bold underline underline-offset-4 decoration-wavy decoration-2 decoration-emerald-500">
-          fresh
+          MQart
         </p>
       </Link>
       <button className="relative" onClick={() => handleCartClick()}>
