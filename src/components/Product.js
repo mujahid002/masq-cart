@@ -2,24 +2,35 @@ import { useGlobalContext } from "@/context/Store";
 import { useState } from "react";
 
 export default function Product({ product }) {
-  const { setCartCount, setShouldDisplayCart, setCartItems } =
-    useGlobalContext(); // Assuming you have a setCartItems function in your context
-  const { name, price, emoji } = product;
+  const { setCartCount, setShouldDisplayCart, setCartItems, cartItems } =
+    useGlobalContext();
+  const { name, price, emoji, id } = product;
   const [quantity, setQuantity] = useState(1);
 
   const addItemToCart = () => {
-    // Create a new item object
     const newItem = {
-      name: name,
-      price: price,
-      quantity: quantity,
+      name,
+      emoji,
+      price,
+      id,
+      quantity,
     };
 
-    // Update the cart count
     setCartCount((prevCount) => prevCount + quantity);
 
-    // Update the cart items array
-    setCartItems((prevItems) => [...prevItems, newItem]);
+    setCartItems((prevItems) => {
+      const existingItemIndex = prevItems.findIndex((item) => item.id === id);
+
+      if (existingItemIndex !== -1) {
+        // Update the quantity of the existing item
+        const updatedItems = [...prevItems];
+        updatedItems[existingItemIndex].quantity += quantity;
+        return updatedItems;
+      } else {
+        // Add the new item to the cart
+        return [...prevItems, newItem];
+      }
+    });
   };
 
   const decreaseQuantity = () => {
@@ -37,7 +48,7 @@ export default function Product({ product }) {
       <div className="text-8xl cursor-default">{emoji}</div>
       <div className="text-lg">{name}</div>
       <div className="text-2xl font-semibold mt-auto">{price}</div>
-      <div className="flex justify-around items-center mt-4 mb-2 ">
+      <div className="flex justify-around items-center mt-4 mb-2">
         <button
           onClick={decreaseQuantity}
           className="hover:text-emerald-500 hover:bg-emerald-50 w-8 h-8 rounded-full transition-colors duration-500"
@@ -56,7 +67,8 @@ export default function Product({ product }) {
         onClick={() => {
           addItemToCart();
           setShouldDisplayCart(true);
-        }} // Call the addItemToCart function when the button is clicked
+          setQuantity(1);
+        }}
         className="bg-emerald-50 hover:bg-emerald-500 hover:text-white transition-colors duration-500 text-emerald-500 rounded-md px-5 py-2"
       >
         Add to cart

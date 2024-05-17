@@ -8,12 +8,29 @@ const GlobalContext = createContext({
   setCartCount: () => {},
   cartItems: [],
   setCartItems: () => {},
+  removeItemFromCart: () => {},
 });
 
 export const GlobalContextProvider = ({ children }) => {
   const [shouldDisplayCart, setShouldDisplayCart] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [cartItems, setCartItems] = useState([]);
+
+  const removeItemFromCart = (itemId) => {
+    setCartItems((prevItems) => {
+      const itemToRemove = prevItems.find((item) => item.id === itemId);
+      if (itemToRemove) {
+        setCartCount((prevCount) =>
+          Math.max(prevCount - itemToRemove.quantity, 0)
+        );
+      }
+      const updatedItems = prevItems.filter((item) => item.id !== itemId);
+      if (updatedItems.length === 0) {
+        setShouldDisplayCart(false);
+      }
+      return updatedItems;
+    });
+  };
 
   return (
     <GlobalContext.Provider
@@ -24,6 +41,7 @@ export const GlobalContextProvider = ({ children }) => {
         setCartCount,
         cartItems,
         setCartItems,
+        removeItemFromCart,
       }}
     >
       {children}
