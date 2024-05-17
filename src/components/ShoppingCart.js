@@ -3,10 +3,9 @@ import CartItem from "./CartItem";
 import CheckoutButton from "./CheckoutButton";
 import { useGlobalContext } from "@/context/Store";
 
-const items = [];
 
 export default function ShoppingCart() {
-  const { shouldDisplayCart, setShouldDisplayCart, cartCount } =
+  const { shouldDisplayCart, setShouldDisplayCart, cartCount, cartItems } =
     useGlobalContext();
   return (
     <div
@@ -16,9 +15,10 @@ export default function ShoppingCart() {
     >
       {cartCount && cartCount > 0 ? (
         <>
-          {items.map((item) => (
-            <CartItem item={item} key={item.id} />
+          {Object.values(cartItems ?? {}).map((entry) => (
+            <CartItem key={entry.id} item={entry} />
           ))}
+
           <CheckoutButton />
         </>
       ) : (
