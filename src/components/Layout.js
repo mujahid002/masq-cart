@@ -5,7 +5,7 @@ export default function Layout({ children }) {
   return (
     <>
       <Head>
-        <title>fresh</title>
+        <title>masq-cart</title>
         <meta
           name="description"
           content="A simple website to show how to use use-shopping-cart"

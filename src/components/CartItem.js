@@ -17,6 +17,7 @@ export default function CartItem({ item }) {
   return (
     <div className="flex items-center gap-4 mb-3">
       <p className="text-4xl">{emoji}</p>
+      {/* <p className="text-4xl">{quantity}</p> */}
       <div>
         {name} <span className="text-xs">({quantity})</span>
       </div>
