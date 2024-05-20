@@ -16,21 +16,25 @@ export default function Product({ product }) {
       quantity,
     };
 
-    setCartCount((prevCount) => prevCount + quantity);
-
     setCartItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex((item) => item.id === id);
 
       if (existingItemIndex !== -1) {
         // Update the quantity of the existing item
         const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantity += quantity;
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: updatedItems[existingItemIndex].quantity + quantity,
+        };
+        setCartCount((prevCount) => prevCount + quantity);
         return updatedItems;
       } else {
-        // Add the new item to the cart
+        setCartCount((prevCount) => prevCount + quantity);
         return [...prevItems, newItem];
       }
     });
+
+    setQuantity(1);
   };
 
   const decreaseQuantity = () => {
@@ -67,7 +71,7 @@ export default function Product({ product }) {
         onClick={() => {
           addItemToCart();
           setShouldDisplayCart(true);
-          setQuantity(1);
+          // setQuantity(1);
         }}
         className="bg-emerald-50 hover:bg-emerald-500 hover:text-white transition-colors duration-500 text-emerald-500 rounded-md px-5 py-2"
       >

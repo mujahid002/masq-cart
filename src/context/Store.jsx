@@ -2,6 +2,13 @@ import { createContext, useContext, useState } from "react";
 
 // Create the context
 const GlobalContext = createContext({
+  userAddress: "",
+  setUserAddress: () => {},
+  nativeBalance: "",
+  setNativeBalance: () => {},
+  tokenBalance: "",
+  setTokenBalance: () => {},
+
   shouldDisplayCart: false,
   setShouldDisplayCart: () => {},
   cartCount: 0,
