@@ -23,17 +23,6 @@ export const initializeProvider = () => {
   }
 };
 
-// export const getProviderAndSigner = () => {
-//   const provider = initializeProvider();
-
-//   if (provider) {
-//     const signer = provider.getSigner();
-//     return { provider, signer };
-//   } else {
-//     return { provider: null, signer: null };
-//   }
-// };
-
 export const provider = initializeProvider();
 export const signer = provider ? provider.getSigner() : null;
 
