@@ -19,6 +19,10 @@ const GlobalContext = createContext({
 });
 
 export const GlobalContextProvider = ({ children }) => {
+  const [userAddress, setUserAddress] = useState("");
+  const [nativeBalance, setNativeBalance] = useState("");
+  const [tokenBalance, setTokenBalance] = useState("");
+
   const [shouldDisplayCart, setShouldDisplayCart] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [cartItems, setCartItems] = useState([]);
@@ -42,6 +46,12 @@ export const GlobalContextProvider = ({ children }) => {
   return (
     <GlobalContext.Provider
       value={{
+        userAddress,
+        setUserAddress,
+        nativeBalance,
+        setNativeBalance,
+        tokenBalance,
+        setTokenBalance,
         shouldDisplayCart,
         setShouldDisplayCart,
         cartCount,
