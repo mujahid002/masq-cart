@@ -4,6 +4,11 @@ import ShoppingCart from "./ShoppingCart";
 import { useGlobalContext } from "@/context/Store";
 import { useEffect } from "react";
 import { ethers } from "ethers";
+import {
+  tMasqContract,
+  tMasqContractWithSigner,
+  mQartContractWithSigner,
+} from "@/constants";
 
 const MASQ_TOKEN_ADDRESS = process.env.NEXT_PUBLIC_MASQ_TOKEN_ADDRESS;
 
@@ -11,13 +16,19 @@ export default function NavBar() {
   const {
     cartCount,
     userAddress,
+    shouldDisplayCart,
+    nativeBalance,
+    tokenBalance,
+    setShouldDisplayCart,
     setUserAddress,
     setNativeBalance,
     setTokenBalance,
   } = useGlobalContext();
 
   const handleCartClick = async () => {
-    // Logic for handling cart click if necessary
+    shouldDisplayCart
+      ? setShouldDisplayCart(false)
+      : setShouldDisplayCart(true);
   };
 
   const ConnectWallet = async () => {
@@ -29,12 +40,41 @@ export default function NavBar() {
       }
 
       const ethereum = window.ethereum;
-      const provider = new ethers.BrowserProvider(ethereum);
+      const provider = new ethers.providers.Web3Provider(ethereum);
 
       // Get current network details
       const network = await provider.getNetwork();
       const isAmoyNetwork = network.chainId === 80002;
 
+      // if (!isAmoyNetwork) {
+      //   const confirmed = confirm(
+      //     "This app needs the Amoy testnet. Would you like to switch networks?"
+      //   );
+      //   if (confirmed) {
+      //     try {
+      //       await ethereum.request({
+      //         method: "wallet_switchEthereumChain",
+      //         params: [{ chainId: "0x13882" }], // Switch to Amoy testnet (80002)
+      //       });
+      //       // After switching, fetch accounts again
+      //       const accounts = await ethereum.request({
+      //         method: "eth_requestAccounts",
+      //       });
+      //       if (accounts.length === 0) {
+      //         console.log("User rejected account connection.");
+      //         return;
+      //       }
+      //       setUserAddress(accounts[0]);
+      //     } catch (switchError) {
+      //       // Handle error when switching networks
+      //       console.error("Error switching network:", switchError);
+      //     }
+      //   } else {
+      //     return;
+      //   }
+      // }
+
+      // If already on the correct network or after switching
       const accounts = await ethereum.request({
         method: "eth_requestAccounts",
       });
@@ -49,20 +89,12 @@ export default function NavBar() {
 
       // Fetch the native balance (ETH)
       const nativeBalance = await provider.getBalance(address);
-      setNativeBalance(ethers.formatEther(nativeBalance)); // Assuming setNativeBalance expects a string
+      setNativeBalance(ethers.utils.formatEther(nativeBalance)); // Assuming setNativeBalance expects a string
 
       // Fetch the token balance if necessary
-      const tokenABI = [
-        // Minimal ABI to get ERC20 Token balance
-        "function balanceOf(address owner) view returns (uint256)",
-      ];
-      const tokenContract = new ethers.Contract(
-        MASQ_TOKEN_ADDRESS,
-        tokenABI,
-        provider
-      );
-      const tokenBalance = await tokenContract.balanceOf(address);
-      setTokenBalance(ethers.formatEther(tokenBalance)); // Assuming setTokenBalance expects a string
+
+      // const tokenBalance = await tMasqContractWithSigner.balanceOf(address);
+      // setTokenBalance(ethers.utils.formatEther(tokenBalance).toString());
 
       // Subscribe to account changes
       ethereum.on("accountsChanged", async (newAccounts) => {
@@ -73,9 +105,9 @@ export default function NavBar() {
         // Update balances on account change
         if (newAddress) {
           const newNativeBalance = await provider.getBalance(newAddress);
-          setNativeBalance(ethers.formatEther(newNativeBalance));
+          setNativeBalance(ethers.utils.formatEther(newNativeBalance));
           const newTokenBalance = await tokenContract.balanceOf(newAddress);
-          setTokenBalance(ethers.formatEther(newTokenBalance));
+          setTokenBalance(ethers.utils.formatEther(newTokenBalance));
         } else {
           setNativeBalance("0");
           setTokenBalance("0");
@@ -86,21 +118,54 @@ export default function NavBar() {
     }
   };
 
+  const getTokenBalance = async (address) => {
+    try {
+      console.log(tMasqContract);
+      if (!tMasqContract) {
+        console.error("tMasqContract is not initialized.");
+        return;
+      }
+      // Call balanceOf function
+      const tokenBalance = await tMasqContract.balanceOf(address);
+      setTokenBalance(ethers.utils.formatEther(tokenBalance).toString());
+    } catch (error) {
+      console.error("Error fetching token balance:", error);
+      // Optionally, provide user feedback here
+    }
+  };
+
   useEffect(() => {
     ConnectWallet();
   }, []); // Empty dependency array to run only once on mount
 
   return (
-    <nav className="py-5 px-12 flex justify-between">
+    <nav className="py-5 px-12 flex justify-between items-center">
       <Link href="/">
         <p className="bg-white text-3xl font-bold underline underline-offset-4 decoration-wavy decoration-2 decoration-emerald-500 cursor-pointer">
           MQart
         </p>
       </Link>
       {userAddress && userAddress.length > 0 ? (
-        <p className="bg-purple-50 hover:bg-purple-500 hover:text-white transition-colors duration-500 text-purple-500 rounded-md px-5 py-2">
-          {userAddress}
-        </p>
+        <div className="flex flex-col items-center">
+          <p className="text-purple-500">{userAddress}</p>
+          <div className="flex gap-4 items-center justify-center">
+            <p className="text-purple-500">
+              MATIC: {parseFloat(nativeBalance).toFixed(2)}
+            </p>
+            {tokenBalance && tokenBalance.length > 0 ? (
+              <p className="text-purple-500">
+                tMASQ: {parseFloat(tokenBalance).toFixed(2)}
+              </p>
+            ) : (
+              <button
+                onClick={() => getTokenBalance(userAddress)}
+                className="bg-purple-50 hover:bg-purple-500 hover:text-white transition-colors duration-500 text-purple-500 rounded-md px-5 py-2 mt-2"
+              >
+                Get tMasq Balance
+              </button>
+            )}
+          </div>
+        </div>
       ) : (
         <button
           onClick={ConnectWallet}
