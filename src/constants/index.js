@@ -812,9 +812,9 @@ export const signer = provider ? provider.getSigner() : null;
 export const tMasqContract = signer
   ? new ethers.Contract(tMASQ_TOKEN_ADDRESS, tMASQ_TOKEN_ABI, signer)
   : null;
-// export const mQartContract = signer
-//   ? new ethers.Contract(MQART_ADDRESS, MQART_ABI, signer)
-//   : null;
+export const mQartContract = signer
+  ? new ethers.Contract(MQART_ADDRESS, MQART_ABI, signer)
+  : null;
 
 export const tMasqContractWithSigner = tMasqContract?.connect(signer);
-// export const mQartContractWithSigner = mQartContract?.connect(signer);
+export const mQartContractWithSigner = mQartContract?.connect(signer);

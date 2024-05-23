@@ -1,12 +1,18 @@
 import { useState, useEffect } from "react";
 import CartItem from "./CartItem";
 import MaticCheckOut from "./MaticCheckOut";
-import MasqCheckOut from "./MasqCheckOut";
+import MasqCheckOut from "./MaticCheckOut";
 import { useGlobalContext } from "../context/Store";
 
 export default function ShoppingCart() {
-  const { shouldDisplayCart, maticPrice, masqPrice, cartCount, cartItems } =
-    useGlobalContext();
+  const {
+    userAddress,
+    shouldDisplayCart,
+    maticPrice,
+    masqPrice,
+    cartCount,
+    cartItems,
+  } = useGlobalContext();
 
   const [maticAmount, setMaticAmount] = useState(0);
   const [masqAmount, setMasqAmount] = useState(0);
@@ -44,8 +50,8 @@ export default function ShoppingCart() {
           {Object.values(cartItems ?? {}).map((entry) => (
             <CartItem key={entry.id} item={entry} />
           ))}
-          <MaticCheckOut />
-          <MasqCheckOut />
+          <MaticCheckOut amount={maticAmount.toFixed(4)} />
+          <MasqCheckOut amount={masqAmount.toFixed(4)} />
           <p>
             Total in Matic: {maticAmount.toFixed(4)} (~${" "}
             {(maticAmount * maticPrice).toFixed(2)})
