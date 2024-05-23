@@ -1,13 +1,16 @@
 import Layout from "@/components/Layout";
 import "@/styles/globals.css";
-import { GlobalContextProvider } from "@/context/Store";
+import { GlobalContextProvider } from "../context/Store";
+import { MoralisProvider } from "../context/MoralisProvider";
 
 export default function App({ Component, pageProps }) {
   return (
     <GlobalContextProvider>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <MoralisProvider>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </MoralisProvider>
     </GlobalContextProvider>
   );
 }
