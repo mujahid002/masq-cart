@@ -11,6 +11,12 @@ const GlobalContext = createContext({
 
   shouldDisplayCart: false,
   setShouldDisplayCart: () => {},
+
+  maticPrice: 0,
+  setMaticPrice: () => {},
+  masqPrice: 0,
+  setMasqPrice: () => {},
+
   cartCount: 0,
   setCartCount: () => {},
   cartItems: [],
@@ -25,6 +31,8 @@ export const GlobalContextProvider = ({ children }) => {
 
   const [shouldDisplayCart, setShouldDisplayCart] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [maticPrice, setMaticPrice] = useState(0);
+  const [masqPrice, setMasqPrice] = useState(0);
   const [cartItems, setCartItems] = useState([]);
 
   const removeItemFromCart = (itemId) => {
@@ -54,6 +62,12 @@ export const GlobalContextProvider = ({ children }) => {
         setTokenBalance,
         shouldDisplayCart,
         setShouldDisplayCart,
+
+        maticPrice,
+        setMaticPrice,
+        masqPrice,
+        setMasqPrice,
+
         cartCount,
         setCartCount,
         cartItems,
