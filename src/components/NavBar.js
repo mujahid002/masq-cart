@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import ShoppingCart from "./ShoppingCart";
-import { useGlobalContext } from "@/context/Store";
+import { useGlobalContext } from "../context/Store";
 import { useEffect } from "react";
 import { ethers } from "ethers";
 import {
-  tMasqContract,
+  // tMasqContract,
   tMasqContractWithSigner,
   mQartContractWithSigner,
 } from "@/constants";
@@ -19,6 +19,8 @@ export default function NavBar() {
     shouldDisplayCart,
     nativeBalance,
     tokenBalance,
+    maticPrice,
+    masqPrice,
     setShouldDisplayCart,
     setUserAddress,
     setNativeBalance,
@@ -113,6 +115,9 @@ export default function NavBar() {
           setTokenBalance("0");
         }
       });
+      if (userAddress && userAddress.length > 0) {
+        await getTokenBalance(userAddress);
+      }
     } catch (error) {
       console.error("Install metamask OR unable to call", error);
     }
@@ -120,13 +125,12 @@ export default function NavBar() {
 
   const getTokenBalance = async (address) => {
     try {
-      console.log(tMasqContract);
-      if (!tMasqContract) {
-        console.error("tMasqContract is not initialized.");
+      if (!tMasqContractWithSigner) {
+        console.error("tMasqContractWithSigner is not initialized.");
         return;
       }
       // Call balanceOf function
-      const tokenBalance = await tMasqContract.balanceOf(address);
+      const tokenBalance = await tMasqContractWithSigner.balanceOf(address);
       setTokenBalance(ethers.utils.formatEther(tokenBalance).toString());
     } catch (error) {
       console.error("Error fetching token balance:", error);
@@ -150,18 +154,26 @@ export default function NavBar() {
           <p className="text-purple-500">{userAddress}</p>
           <div className="flex gap-4 items-center justify-center">
             <p className="text-purple-500">
-              MATIC: {parseFloat(nativeBalance).toFixed(2)}
+              {nativeBalance
+                ? "MATIC: " +
+                  parseFloat(nativeBalance).toFixed(2) +
+                  `(~$${(maticPrice * parseFloat(nativeBalance)).toFixed(2)})`
+                : "Loading..."}
             </p>
             {tokenBalance && tokenBalance.length > 0 ? (
               <p className="text-purple-500">
-                tMASQ: {parseFloat(tokenBalance).toFixed(2)}
+                {nativeBalance
+                  ? "MASQ: " +
+                    parseFloat(tokenBalance).toFixed(2) +
+                    `(~$${(masqPrice * parseFloat(tokenBalance)).toFixed(2)})`
+                  : "Loading..."}
               </p>
             ) : (
               <button
                 onClick={() => getTokenBalance(userAddress)}
-                className="bg-purple-50 hover:bg-purple-500 hover:text-white transition-colors duration-500 text-purple-500 rounded-md px-5 py-2 mt-2"
+                className="bg-purple-50 hover:bg-purple-500 hover:text-white transition-colors duration-500 text-purple-500 rounded-md"
               >
-                Get tMasq Balance
+                Check tMasq
               </button>
             )}
           </div>
