@@ -1,39 +1,47 @@
 import { createContext, useContext, useState } from "react";
 
 // Create the context
-const GlobalContext = createContext({
-  userAddress: "",
-  setUserAddress: () => {},
-  nativeBalance: "",
-  setNativeBalance: () => {},
-  tokenBalance: "",
-  setTokenBalance: () => {},
-
-  shouldDisplayCart: false,
-  setShouldDisplayCart: () => {},
-
-  maticPrice: 0,
-  setMaticPrice: () => {},
-  masqPrice: 0,
-  setMasqPrice: () => {},
-
-  cartCount: 0,
-  setCartCount: () => {},
-  cartItems: [],
-  setCartItems: () => {},
-  removeItemFromCart: () => {},
-});
+const GlobalContext = createContext();
 
 export const GlobalContextProvider = ({ children }) => {
   const [userAddress, setUserAddress] = useState("");
   const [nativeBalance, setNativeBalance] = useState("");
   const [tokenBalance, setTokenBalance] = useState("");
-
   const [shouldDisplayCart, setShouldDisplayCart] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [maticPrice, setMaticPrice] = useState(0);
   const [masqPrice, setMasqPrice] = useState(0);
   const [cartItems, setCartItems] = useState([]);
+
+  const addItemToCart = (product, quantity) => {
+    const { id, name, price, emoji, discount } = product;
+
+    setCartItems((prevItems) => {
+      const existingItemIndex = prevItems.findIndex((item) => item.id === id);
+      if (existingItemIndex !== -1) {
+        // Update the quantity of the existing item
+        const updatedItems = [...prevItems];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: updatedItems[existingItemIndex].quantity + quantity,
+        };
+        return updatedItems;
+      } else {
+        const newItem = {
+          id,
+          name,
+          price,
+          emoji,
+          discount,
+          quantity,
+        };
+        return [...prevItems, newItem];
+      }
+    });
+
+    setCartCount((prevCount) => prevCount + quantity);
+    setShouldDisplayCart(true);
+  };
 
   const removeItemFromCart = (itemId) => {
     setCartItems((prevItems) => {
@@ -62,16 +70,15 @@ export const GlobalContextProvider = ({ children }) => {
         setTokenBalance,
         shouldDisplayCart,
         setShouldDisplayCart,
-
         maticPrice,
         setMaticPrice,
         masqPrice,
         setMasqPrice,
-
         cartCount,
         setCartCount,
         cartItems,
         setCartItems,
+        addItemToCart,
         removeItemFromCart,
       }}
     >
