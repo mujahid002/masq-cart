@@ -801,20 +801,27 @@ export const initializeProvider = () => {
   if (windowWithEthereum.ethereum) {
     return new ethers.providers.Web3Provider(windowWithEthereum.ethereum);
   } else {
-    console.warn("initializeProvider: BrowserProvider not available.");
+    console.warn("initializeProvider: Web3Provider not available.");
     return null;
   }
 };
 
-export const provider = initializeProvider();
+export const provider =
+  typeof window !== "undefined" ? initializeProvider() : null;
 export const signer = provider ? provider.getSigner() : null;
 
-export const tMasqContract = signer
+export const tMasqContractWithSigner = signer
   ? new ethers.Contract(tMASQ_TOKEN_ADDRESS, tMASQ_TOKEN_ABI, signer)
   : null;
-export const mQartContract = signer
+export const mQartContractWithSigner = signer
   ? new ethers.Contract(MQART_ADDRESS, MQART_ABI, signer)
   : null;
+export const tMasqContractWithProvider = provider
+  ? new ethers.Contract(tMASQ_TOKEN_ADDRESS, tMASQ_TOKEN_ABI, provider)
+  : null;
+export const mQartContractWithProvider = provider
+  ? new ethers.Contract(MQART_ADDRESS, MQART_ABI, provider)
+  : null;
 
-export const tMasqContractWithSigner = tMasqContract?.connect(signer);
-export const mQartContractWithSigner = mQartContract?.connect(signer);
+export const tMasqContract = tMasqContractWithSigner?.connect(signer);
+// export const mQartContractWithSigner = mQartContract?.connect(signer);

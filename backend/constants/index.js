@@ -1,15 +1,29 @@
 require("dotenv").config();
 const ethers = require("ethers");
 
-const provider = new ethers.providers.JsonRpcProvider(
-  `${process.env.AMOY_RPC_URL}`
-);
+const provider = new ethers.JsonRpcProvider(process.env.AMOY_RPC_URL);
 
-const amoyWallet = new ethers.Wallet(`${process.env.PRIVATE_KEY}`, provider);
+const getPrivateKey = () => {
+  let privateKey = process.env.PRIVATE_KEY;
+  // if (!privateKey.startsWith("0x")) {
+  //   privateKey = `0x${privateKey}`;
+  // }
+  return privateKey;
+};
+
+const privateKey = getPrivateKey();
+const amoyWallet = new ethers.Wallet(privateKey, provider);
 const adminAddress = amoyWallet.getAddress();
 
-const signer = provider.getSigner();
-MQART_ADDRESS = "0xE6C8ab39ca9e6c438105C41151a3C4c9eB985a21";
+console.log("Admin Address:", adminAddress); // Debugging log
+
+// Use the wallet directly for signing
+const signer = amoyWallet;
+
+const MQART_ADDRESS = "0xE6C8ab39ca9e6c438105C41151a3C4c9eB985a21";
+
+console.log("MQART Address:", MQART_ADDRESS); // Debugging log
+
 MQART_ABI = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },
   { inputs: [], name: "ERC721EnumerableForbiddenBatchMint", type: "error" },
