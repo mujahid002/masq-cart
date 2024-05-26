@@ -31,7 +31,7 @@ app.post("/create-orderId", async (req, res) => {
     }
 
     // Parsing the order amount to Ether
-    const parsedValue = ethers.utils.parseEther(orderAmount.toString());
+    const parsedValue = ethers.parseEther(orderAmount.toString());
 
     // Calling the contract function
     const orderId = await MQartContract.createOrderId(
@@ -41,16 +41,18 @@ app.post("/create-orderId", async (req, res) => {
         gasLimit: 500000,
       }
     );
+    await orderId.wait();
 
     // Return the transaction details or a success message
     res.status(200).json({
       success: true,
-      orderId: ethers.BigNumber.from(orderId.value).toString(),
+      orderId: orderId.value.toString(),
     });
+
     const data = {
       userAddress: userAddress,
-      orderId: orderId,
-      orderNature: orderNature,
+      orderId: orderId.value.toString(),
+      orderIsNative: orderNature,
       orderAmount: orderAmount,
     };
     await storeOrder(data);
