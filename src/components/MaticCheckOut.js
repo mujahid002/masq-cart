@@ -1,19 +1,20 @@
 import { useState } from "react";
-import { mQartContractWithSigner } from "../constants/index";
-import { ethers } from "ethers"; // Ensure ethers is imported
+import { mQartContractWithSigner, signer } from "../constants/index";
+import { ethers } from "ethers";
 import { useGlobalContext } from "../context/Store";
 import axios from "axios";
 
 export default function MaticCheckOut({ amount }) {
-  const { userAddress } = useGlobalContext();
   const [status, setStatus] = useState("idle");
-  const [orderId, setOrderId] = useState(null);
+  const { userAddress } = useGlobalContext();
 
   const createOrderId = async () => {
     try {
+      const orderAmount = ethers.utils.parseEther(amount.toString()).toString();
+      console.log("the amount is: ", orderAmount);
       const data = {
         userAddress: userAddress,
-        orderAmount: amount,
+        orderAmount: orderAmount,
         orderNature: true,
       };
 
@@ -30,39 +31,52 @@ export default function MaticCheckOut({ amount }) {
       console.log("The response is", res.data);
 
       if (res.data.success) {
-        // Access orderId from response data
-        const newOrderId = res.data.orderId;
-        setOrderId(newOrderId);
-        console.log("The order id is", orderId);
-        return;
+        const newOrderId = await res.data;
+        const orderId = await newOrderId.orderId;
+        console.log("The order id is", res.data.orderId);
+        return orderId;
       } else {
         console.error("Failed to create orderId:", res.data.message);
       }
     } catch (error) {
       console.error("Error creating order ID:", error);
-      // Handle error here, e.g., show error message to the user
     }
   };
 
   const maticPayment = async () => {
     setStatus("loading");
     try {
-      console.log("the amount is: ", amount);
-      await createOrderId();
-      if (!orderId) {
-        console.log("Unable to create orderId");
+      const amountString = amount.toString();
+      if (isNaN(parseFloat(amountString))) {
+        console.error("Invalid amount value");
+        setStatus("error");
         return;
       }
-      alert(`Your orderId is ${orderId}`);
-      const parsedValue = ethers.utils.parseEther(amount.toString());
 
-      const trx = await mQartContractWithSigner.depositNative(orderId, {
+      let orderId = await createOrderId();
+      if (!orderId) {
+        console.log("Unable to create orderId");
+        setStatus("error");
+        return;
+      }
+
+      const parsedValue = ethers.utils.parseEther(amountString);
+      console.log("Parsed value is", parsedValue.toString());
+
+      if (!mQartContractWithSigner) {
+        console.error("Contract is not connected with a signer");
+        setStatus("error");
+        return;
+      }
+
+      const contract = mQartContractWithSigner.connect(signer);
+      const trx = await contract.depositNative(orderId, {
         value: parsedValue,
-        // gasPrice: gasPrice,
-        gasLimit: 3000000000,
+        gasLimit: 3000000,
       });
 
-      await trx.wait(); // Wait for the transaction to be mined
+      await trx;
+      console.log(trx);
       setStatus("success");
     } catch (error) {
       console.error("Payment failed", error);
@@ -80,7 +94,7 @@ export default function MaticCheckOut({ amount }) {
         </div>
       )}
       <button
-        onClick={() => maticPayment()}
+        onClick={maticPayment}
         className="bg-emerald-50 hover:bg-emerald-500 hover:text-white transition-colors duration-500 text-emerald-500 py-3 px-5 rounded-md w-full"
       >
         {status !== "loading" ? "Pay with Matic" : "Loading..."}
