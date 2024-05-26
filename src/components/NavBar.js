@@ -5,10 +5,10 @@ import { useGlobalContext } from "../context/Store";
 import { useEffect } from "react";
 import { ethers } from "ethers";
 import {
-  // tMasqContract,
   tMasqContractWithSigner,
   mQartContractWithSigner,
-} from "@/constants";
+  tMASQ_TOKEN_ADDRESS,
+} from "../constants/index";
 
 const MASQ_TOKEN_ADDRESS = process.env.NEXT_PUBLIC_MASQ_TOKEN_ADDRESS;
 
@@ -108,8 +108,8 @@ export default function NavBar() {
         if (newAddress) {
           const newNativeBalance = await provider.getBalance(newAddress);
           setNativeBalance(ethers.utils.formatEther(newNativeBalance));
-          const newTokenBalance = await tokenContract.balanceOf(newAddress);
-          setTokenBalance(ethers.utils.formatEther(newTokenBalance));
+          // const newTokenBalance = await tokenContract.balanceOf(newAddress);
+          // setTokenBalance(ethers.utils.formatEther(newTokenBalance));
         } else {
           setNativeBalance("0");
           setTokenBalance("0");
@@ -125,13 +125,32 @@ export default function NavBar() {
 
   const getTokenBalance = async (address) => {
     try {
-      if (!tMasqContractWithSigner) {
-        console.error("tMasqContractWithSigner is not initialized.");
-        return;
+      // Fetch Token Balance
+      const tokenDataResponse = await fetch(
+        `https://api-amoy.polygonscan.com/api?module=account&action=tokenbalance&contractaddress=${tMASQ_TOKEN_ADDRESS}&address=${address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_POLYGON_API_KEY}`
+      );
+
+      if (!tokenDataResponse.ok) {
+        throw new Error("Failed to fetch token balance");
       }
-      // Call balanceOf function
-      const tokenBalance = await tMasqContractWithSigner.balanceOf(address);
-      setTokenBalance(ethers.utils.formatEther(tokenBalance).toString());
+
+      const tokenData = await tokenDataResponse.json();
+      // console.log(tokenData.result);
+
+      if (tokenData.status !== "1" || !tokenData.result) {
+        throw new Error("Unexpected response from API");
+      }
+
+      const tokenBalance = tokenData.result;
+
+      // console.log(tokenBalance)
+      if (isNaN(tokenBalance)) {
+        console.error("Token balance parsing issue:", tokenData.result);
+        throw new Error("Invalid token balance");
+      }
+
+      setTokenBalance(ethers.utils.formatEther(tokenBalance));
+      console.log(tokenBalance);
     } catch (error) {
       console.error("Error fetching token balance:", error);
       // Optionally, provide user feedback here
