@@ -94,10 +94,9 @@ export default function NavBar() {
       setNativeBalance(ethers.utils.formatEther(nativeBalance)); // Assuming setNativeBalance expects a string
 
       // Fetch the token balance if necessary
-
-      // const tokenBalance = await tMasqContractWithSigner.balanceOf(address);
-      // setTokenBalance(ethers.utils.formatEther(tokenBalance).toString());
-
+      if (userAddress && userAddress.length > 0) {
+        await getTokenBalance(userAddress);
+      }
       // Subscribe to account changes
       ethereum.on("accountsChanged", async (newAccounts) => {
         const newAddress = newAccounts.length > 0 ? newAccounts[0] : "";
@@ -108,8 +107,9 @@ export default function NavBar() {
         if (newAddress) {
           const newNativeBalance = await provider.getBalance(newAddress);
           setNativeBalance(ethers.utils.formatEther(newNativeBalance));
-          // const newTokenBalance = await tokenContract.balanceOf(newAddress);
-          // setTokenBalance(ethers.utils.formatEther(newTokenBalance));
+          if (userAddress && userAddress.length > 0) {
+            await getTokenBalance(userAddress);
+          }
         } else {
           setNativeBalance("0");
           setTokenBalance("0");
@@ -159,7 +159,7 @@ export default function NavBar() {
 
   useEffect(() => {
     ConnectWallet();
-  }, []); // Empty dependency array to run only once on mount
+  }, [userAddress]); // Empty dependency array to run only once on mount
 
   return (
     <nav className="py-5 px-12 flex justify-between items-center">
