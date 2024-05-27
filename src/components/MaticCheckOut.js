@@ -72,7 +72,7 @@ export default function MaticCheckOut({ amount }) {
       const contract = mQartContractWithSigner.connect(signer);
       const trx = await contract.depositNative(orderId, {
         value: parsedValue,
-        gasLimit: 3000000,
+        gasLimit: 1000000,
       });
 
       await trx;

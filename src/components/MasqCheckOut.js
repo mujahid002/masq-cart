@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { ethers } from "ethers";
 import {
+  mQartContract,
   tMasqContractWithSigner,
   mQartContractWithSigner,
   tMASQ_TOKEN_ADDRESS,
@@ -11,7 +12,7 @@ import { useGlobalContext } from "../context/Store";
 
 export default function MasqCheckOut({ amount }) {
   const [status, setStatus] = useState("idle");
-  const { userAddress } = useGlobalContext();
+  const { userAddress, tokenBalance } = useGlobalContext();
 
   const createOrderId = async () => {
     try {
@@ -45,32 +46,43 @@ export default function MasqCheckOut({ amount }) {
     }
   };
 
-  const checkApproved = async (address, contractAddress, amount) => {
+  const checkApproved = async (address, contractAddress) => {
     try {
       const checkApprovedBalance = await tMasqContract.allowance(
         address,
         contractAddress
       );
-      const approvedBalance = checkApprovedBalance.value.toString();
-      if (approvedBalance !== amount) {
-        return false;
-      }
-      return true;
+      const approvedBalance = checkApprovedBalance.toString();
+      console.log("Approved Balance is", approvedBalance);
+      return checkApprovedBalance;
     } catch (error) {
       console.error("Error checking approval:", error);
-      return false;
+      return ethers.BigNumber.from(0);
     }
   };
 
   const masqApproval = async (address) => {
     try {
-      if (await checkApproved(address, tMASQ_TOKEN_ADDRESS, amount)) {
+      const parsedValue = ethers.utils.parseEther(amount.toString());
+      const approvedBalance = await checkApproved(address, MQART_ADDRESS);
+
+      console.log(parsedValue.toString(), approvedBalance.toString(), "check");
+
+      if (approvedBalance.gte(parsedValue)) {
+        alert(`You have enough approved balance, please proceed with payment!`);
         return true;
       }
-      alert(`Need to approve ${amount} of Masq token`);
-      const parsedValue = ethers.utils.parseEther(amount.toString());
-      const trx = await tMasqContract.approve(MQART_ADDRESS, parsedValue);
-      await trx;
+
+      const requiredApproval = parsedValue.sub(approvedBalance);
+      alert(
+        `Need to approve ${ethers.utils.formatEther(
+          requiredApproval
+        )} more of Masq token`
+      );
+
+      const trx = await tMasqContract.approve(MQART_ADDRESS, requiredApproval);
+      await trx.wait();
+      console.log("the trx for approval is", trx);
       return true;
     } catch (error) {
       console.error("Approval failed", error);
@@ -81,6 +93,10 @@ export default function MasqCheckOut({ amount }) {
   const masqPayment = async () => {
     setStatus("loading");
     try {
+      if (tokenBalance == 0) {
+        alert(`Your MASQ balance is ${tokenBalance}, get tokens first!`);
+        return;
+      }
       const check = await masqApproval(userAddress);
       if (!check) {
         throw new Error("Confirm your token approval");
@@ -93,12 +109,10 @@ export default function MasqCheckOut({ amount }) {
         return;
       }
       alert(`Your orderId is ${orderId}`);
-      alert(`Total Amount is ${ethers.utils.formatEther(amount.toString())}`);
-      const parsedValue = ethers.utils.formatEther(amount.toString());
+      const parsedValue = ethers.utils.parseEther(amount.toString());
 
-      const trx = await mQartContractWithSigner.depositNative(orderId, {
-        value: parsedValue,
-        gasLimit: 3000000,
+      const trx = await mQartContract.depositToken(orderId, parsedValue, {
+        gasLimit: 1000000,
       });
 
       await trx.wait();
