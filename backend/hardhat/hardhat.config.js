@@ -24,18 +24,15 @@ module.exports = {
   etherscan: {
     apiKey: {
       sepolia: process.env.SEPOLIA_API_KEY,
+      polygonAmoy: process.env.AMOY_API_KEY,
     },
-    // apiKey: {
-    //   polygonAmoy: process.env.AMOY_OKLINK_API_KEY,
-    // },
     customChains: [
       {
         network: "polygonAmoy",
         chainId: 80002,
         urls: {
-          apiURL:
-            "https://www.oklink.com/api/explorer/v1/contract/verify/async/api/polygonAmoy",
-          browserURL: "https://www.oklink.com/amoy",
+          apiURL: "https://api.polygonscan.com/api",
+          browserURL: "https://amoy.polygonscan.com/",
         },
       },
     ],
