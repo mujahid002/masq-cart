@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 
 export const tMASQ_TOKEN_ADDRESS = "0xd98c3EBd6B7f9b7cDa2449eCac00d1E5F47a8193";
-export const MQART_ADDRESS = "0xE6C8ab39ca9e6c438105C41151a3C4c9eB985a21";
+export const MQART_ADDRESS = "0x7A9210f7512CE2DD75fE4FaA64Fe9F8A6cbac216";
 export const tMASQ_TOKEN_ABI = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },
   { inputs: [], name: "AccessControlBadConfirmation", type: "error" },
@@ -514,6 +514,31 @@ export const MQART_ABI = [
     inputs: [
       {
         indexed: true,
+        internalType: "uint256",
+        name: "orderId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "orderAmount",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "bool",
+        name: "orderNature",
+        type: "bool",
+      },
+    ],
+    name: "OrderIdCreated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: "address",
         name: "previousOwner",
         type: "address",
@@ -566,7 +591,7 @@ export const MQART_ABI = [
       { internalType: "bool", name: "orderNature", type: "bool" },
     ],
     name: "createOrderId",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -824,4 +849,4 @@ export const mQartContractWithProvider = provider
   : null;
 
 export const tMasqContract = tMasqContractWithSigner?.connect(signer);
-// export const mQartContractWithSigner = mQartContract?.connect(signer);
+export const mQartContract = mQartContractWithSigner?.connect(signer);
