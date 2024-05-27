@@ -1,7 +1,7 @@
 require("dotenv").config();
 const ethers = require("ethers");
 
-const provider = new ethers.JsonRpcProvider(process.env.AMOY_RPC_URL);
+const provider = new ethers.providers.JsonRpcProvider(process.env.AMOY_RPC_URL);
 
 const getPrivateKey = () => {
   let privateKey = process.env.PRIVATE_KEY;
@@ -20,7 +20,7 @@ console.log("Admin Address:", adminAddress); // Debugging log
 // Use the wallet directly for signing
 const signer = amoyWallet;
 
-const MQART_ADDRESS = "0xE6C8ab39ca9e6c438105C41151a3C4c9eB985a21";
+const MQART_ADDRESS = "0x7A9210f7512CE2DD75fE4FaA64Fe9F8A6cbac216";
 
 console.log("MQART Address:", MQART_ADDRESS); // Debugging log
 
@@ -168,6 +168,31 @@ MQART_ABI = [
     inputs: [
       {
         indexed: true,
+        internalType: "uint256",
+        name: "orderId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "orderAmount",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "bool",
+        name: "orderNature",
+        type: "bool",
+      },
+    ],
+    name: "OrderIdCreated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: "address",
         name: "previousOwner",
         type: "address",
@@ -185,12 +210,7 @@ MQART_ABI = [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
+      { indexed: true, internalType: "address", name: "from", type: "address" },
       { indexed: true, internalType: "address", name: "to", type: "address" },
       {
         indexed: true,
@@ -225,7 +245,7 @@ MQART_ABI = [
       { internalType: "bool", name: "orderNature", type: "bool" },
     ],
     name: "createOrderId",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
