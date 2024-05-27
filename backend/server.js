@@ -18,16 +18,18 @@ app.use(bodyParser.json());
 async function getEventDataFromTransaction(transactionHash) {
   try {
     const receipt = await provider.getTransactionReceipt(transactionHash);
+    if (!receipt) {
+      throw new Error("Transaction receipt not found");
+    }
     const logs = receipt.logs;
     let eventData = [];
-    // let decodedData;
     logs.forEach((log) => {
       if (
         log.topics[0] ===
         MQartContract.interface.getEventTopic("OrderIdCreated")
       ) {
         // Decode the event data
-        decodedData = MQartContract.interface.decodeEventLog(
+        const decodedData = MQartContract.interface.decodeEventLog(
           "OrderIdCreated",
           log.data,
           log.topics
@@ -38,7 +40,6 @@ async function getEventDataFromTransaction(transactionHash) {
           ethers.BigNumber.from(decodedData.orderAmount).toString()
         );
         eventData.push(decodedData.orderNature);
-        // eventData.push(decodedData.eNoticeID);
       }
     });
     console.log(eventData);
@@ -77,26 +78,33 @@ app.post("/create-orderId", async (req, res) => {
     );
 
     // Wait for the transaction to be mined
-    const orderIdReceipt = await orderIdTx;
+    const orderIdReceipt = await orderIdTx.wait();
+    if (!orderIdReceipt) {
+      throw new Error("Transaction not mined");
+    }
 
     // Extract transaction hash from receipt
     const transactionHash = orderIdReceipt.transactionHash;
+    console.log("The Hash is", transactionHash);
 
     // Fetch event data from the mined transaction
     const eventData = await getEventDataFromTransaction(transactionHash);
+    if (!eventData || eventData.length === 0) {
+      throw new Error("Event data not found");
+    }
 
     // Return the transaction details or a success message
     res.status(200).json({
       success: true,
-      orderId: eventData[0].toString(),
+      orderId: eventData[0],
       transactionHash: transactionHash,
     });
 
     // Store order data
     const data = {
       userAddress: userAddress,
-      orderId: eventData[0].toString(),
-      orderIsNative: orderNature,
+      orderId: eventData[0],
+      orderIsNative: eventData[2],
       orderAmount: orderAmount,
     };
     await storeOrder(data);
