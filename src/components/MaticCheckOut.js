@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { mQartContractWithSigner, signer } from "../constants/index";
+import { mQartContractWithSigner, mQartContract } from "../constants/index";
 import { ethers } from "ethers";
 import { useGlobalContext } from "../context/Store";
 import axios from "axios";
@@ -14,7 +14,7 @@ export default function MaticCheckOut({ amount }) {
       console.log("the amount is: ", orderAmount);
       const data = {
         userAddress: userAddress,
-        orderAmount: orderAmount,
+        orderAmount: amount,
         orderNature: true,
       };
 
@@ -59,6 +59,7 @@ export default function MaticCheckOut({ amount }) {
         setStatus("error");
         return;
       }
+      alert(`Your orderId is ${orderId}`);
 
       const parsedValue = ethers.utils.parseEther(amountString);
       console.log("Parsed value is", parsedValue.toString());
@@ -69,10 +70,9 @@ export default function MaticCheckOut({ amount }) {
         return;
       }
 
-      const contract = mQartContractWithSigner.connect(signer);
-      const trx = await contract.depositNative(orderId, {
+      const trx = await mQartContract.depositNative(orderId, {
         value: parsedValue,
-        gasLimit: 1000000,
+        gasLimit: 5000000,
       });
 
       await trx;
