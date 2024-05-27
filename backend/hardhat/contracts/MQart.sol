@@ -37,6 +37,8 @@ contract MQart is ERC721Enumerable, Ownable, ReentrancyGuard {
     /// @notice Mapping from order ID to the nature of the order (true for native, false for token)
     mapping(uint256 => bool) public s_orderNature;
 
+    event OrderIdCreated(uint256 indexed orderId, uint256 indexed orderAmount, bool indexed orderNature);
+
     /// @dev Initializes the contract with the token name "MQartToken" and symbol "MQT". Sets the deployer as the owner.
     constructor() ERC721("MQartToken", "MQT") Ownable(msg.sender) {}
 
@@ -47,17 +49,16 @@ contract MQart is ERC721Enumerable, Ownable, ReentrancyGuard {
     /// @notice Creates a new order with the specified amount and nature.
     /// @param orderAmount The amount required for the order.
     /// @param orderNature The nature of the order (true for native, false for token).
-    /// @return orderId The newly created order ID.
     function createOrderId(uint256 orderAmount, bool orderNature)
         public
         onlyOwner
-        returns (uint256)
     {
         uint256 orderId = s_orderId;
         s_orderAmount[orderId] = orderAmount;
         s_orderNature[orderId] = orderNature;
         s_orderId += 1;
-        return orderId;
+
+        emit OrderIdCreated(orderId, orderAmount, orderNature);
     }
 
     /// @notice Allows a user to deposit native cryptocurrency to fulfill an order.
