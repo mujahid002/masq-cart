@@ -1,6 +1,13 @@
 // src/data/products.js
 
 import Moralis from "moralis";
+import {
+  provider,
+  MQART_ADDRESS,
+  mQartContractWithProvider,
+  tMasqContractWithProvider,
+} from "../constants";
+import { ethers } from "ethers";
 
 export async function getPrices() {
   try {
@@ -34,6 +41,33 @@ export async function getPrices() {
     };
   } catch (error) {
     console.error("Error fetching prices:", error);
+    return { error: error.message };
+  }
+}
+export async function getDeposits() {
+  try {
+    // Get the balance of MATIC for the specified address
+    const maticTrx = await provider.getBalance(MQART_ADDRESS);
+
+    // Convert BigNumber to a string and then to a float
+    const matic = parseFloat(ethers.utils.formatEther(maticTrx));
+
+    // Get the MASQ balance from the contract for the specified address
+    const masqTrx = await tMasqContractWithProvider.balanceOf(MQART_ADDRESS);
+
+    // Convert BigNumber to a string and then to a float
+    const masq = parseFloat(ethers.utils.formatEther(masqTrx));
+
+    console.log(matic);
+    console.log(masq);
+
+    // Return the formatted prices
+    return {
+      maticDeposits: matic.toFixed(4),
+      masqDeposits: masq.toFixed(4),
+    };
+  } catch (error) {
+    console.error("Error fetching deposits:", error);
     return { error: error.message };
   }
 }
