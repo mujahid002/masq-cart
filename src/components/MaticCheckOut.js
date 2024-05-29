@@ -5,6 +5,8 @@ import { useGlobalContext } from "../context/Store";
 import axios from "axios";
 
 export default function MaticCheckOut({ amount }) {
+  const { setOrderId } = useGlobalContext();
+
   const [status, setStatus] = useState("idle");
   const { userAddress } = useGlobalContext();
 
@@ -34,6 +36,7 @@ export default function MaticCheckOut({ amount }) {
         const newOrderId = await res.data;
         const orderId = await newOrderId.orderId;
         console.log("The order id is", res.data.orderId);
+        setOrderId(orderId);
         return orderId;
       } else {
         console.error("Failed to create orderId:", res.data.message);

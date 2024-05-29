@@ -11,6 +11,7 @@ import { MQART_ADDRESS, tMasqContract } from "../constants/index";
 import { useGlobalContext } from "../context/Store";
 
 export default function MasqCheckOut({ amount }) {
+  const { setOrderId } = useGlobalContext();
   const [status, setStatus] = useState("idle");
   const { userAddress, tokenBalance } = useGlobalContext();
 
@@ -37,6 +38,7 @@ export default function MasqCheckOut({ amount }) {
       if (res.data.success) {
         const orderId = res.data.orderId;
         console.log("The order id is", orderId);
+        setOrderId(orderId);
         return orderId;
       } else {
         console.error("Failed to create orderId:", res.data.message);
@@ -89,6 +91,38 @@ export default function MasqCheckOut({ amount }) {
       return false;
     }
   };
+  const getTokenBalance = async (address) => {
+    try {
+      // Fetch Token Balance
+      const tokenDataResponse = await fetch(
+        `https://api-amoy.polygonscan.com/api?module=account&action=tokenbalance&contractaddress=${tMASQ_TOKEN_ADDRESS}&address=${address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_POLYGON_API_KEY}`
+      );
+
+      if (!tokenDataResponse.ok) {
+        throw new Error("Failed to fetch token balance");
+      }
+
+      const tokenData = await tokenDataResponse.json();
+      // console.log(tokenData.result);
+
+      if (tokenData.status !== "1" || !tokenData.result) {
+        throw new Error("Unexpected response from API");
+      }
+
+      const tokenBalance = tokenData.result;
+
+      // console.log(tokenBalance)
+      if (isNaN(tokenBalance)) {
+        console.error("Token balance parsing issue:", tokenData.result);
+        throw new Error("Invalid token balance");
+      }
+
+      setTokenBalance(ethers.utils.formatEther(tokenBalance));
+      console.log(tokenBalance);
+    } catch (error) {
+      console.error("Error fetching token balance:", error);
+    }
+  };
 
   const masqPayment = async () => {
     setStatus("loading");
@@ -117,6 +151,7 @@ export default function MasqCheckOut({ amount }) {
 
       await trx.wait();
       setStatus("success");
+      getTokenBalance(userAddress);
     } catch (error) {
       console.error("Payment failed", error);
       setStatus("error");
