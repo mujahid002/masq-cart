@@ -8,9 +8,12 @@ export const GlobalContextProvider = ({ children }) => {
   const [nativeBalance, setNativeBalance] = useState("");
   const [tokenBalance, setTokenBalance] = useState("");
   const [shouldDisplayCart, setShouldDisplayCart] = useState(false);
+  const [orderId, setOrderId] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [maticPrice, setMaticPrice] = useState(0);
   const [masqPrice, setMasqPrice] = useState(0);
+  const [maticDeposits, setMaticDeposits] = useState(0);
+  const [masqDeposits, setMasqDeposits] = useState(0);
   const [cartItems, setCartItems] = useState([]);
 
   const addItemToCart = (product, quantity) => {
@@ -70,10 +73,16 @@ export const GlobalContextProvider = ({ children }) => {
         setTokenBalance,
         shouldDisplayCart,
         setShouldDisplayCart,
+        orderId,
+        setOrderId,
         maticPrice,
         setMaticPrice,
         masqPrice,
         setMasqPrice,
+        maticDeposits,
+        setMaticDeposits,
+        masqDeposits,
+        setMasqDeposits,
         cartCount,
         setCartCount,
         cartItems,
