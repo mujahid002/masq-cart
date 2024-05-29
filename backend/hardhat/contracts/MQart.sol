@@ -37,7 +37,11 @@ contract MQart is ERC721Enumerable, Ownable, ReentrancyGuard {
     /// @notice Mapping from order ID to the nature of the order (true for native, false for token)
     mapping(uint256 => bool) public s_orderNature;
 
-    event OrderIdCreated(uint256 indexed orderId, uint256 indexed orderAmount, bool indexed orderNature);
+    event OrderIdCreated(
+        uint256 indexed orderId,
+        uint256 indexed orderAmount,
+        bool indexed orderNature
+    );
 
     /// @dev Initializes the contract with the token name "MQartToken" and symbol "MQT". Sets the deployer as the owner.
     constructor() ERC721("MQartToken", "MQT") Ownable(msg.sender) {}
