@@ -4,16 +4,11 @@ import ShoppingCart from "./ShoppingCart";
 import { useGlobalContext } from "../context/Store";
 import { useEffect } from "react";
 import { ethers } from "ethers";
-import {
-  tMasqContractWithSigner,
-  mQartContractWithSigner,
-  tMASQ_TOKEN_ADDRESS,
-} from "../constants/index";
-
-const MASQ_TOKEN_ADDRESS = process.env.NEXT_PUBLIC_MASQ_TOKEN_ADDRESS;
+import { provider, tMASQ_TOKEN_ADDRESS } from "../constants/index";
 
 export default function NavBar() {
   const {
+    orderId,
     cartCount,
     userAddress,
     shouldDisplayCart,
@@ -44,37 +39,7 @@ export default function NavBar() {
       const ethereum = window.ethereum;
       const provider = new ethers.providers.Web3Provider(ethereum);
 
-      // Get current network details
-      const network = await provider.getNetwork();
-      const isAmoyNetwork = network.chainId === 80002;
-
-      // if (!isAmoyNetwork) {
-      //   const confirmed = confirm(
-      //     "This app needs the Amoy testnet. Would you like to switch networks?"
-      //   );
-      //   if (confirmed) {
-      //     try {
-      //       await ethereum.request({
-      //         method: "wallet_switchEthereumChain",
-      //         params: [{ chainId: "0x13882" }], // Switch to Amoy testnet (80002)
-      //       });
-      //       // After switching, fetch accounts again
-      //       const accounts = await ethereum.request({
-      //         method: "eth_requestAccounts",
-      //       });
-      //       if (accounts.length === 0) {
-      //         console.log("User rejected account connection.");
-      //         return;
-      //       }
-      //       setUserAddress(accounts[0]);
-      //     } catch (switchError) {
-      //       // Handle error when switching networks
-      //       console.error("Error switching network:", switchError);
-      //     }
-      //   } else {
-      //     return;
-      //   }
-      // }
+      await checkNetwork();
 
       // If already on the correct network or after switching
       const accounts = await ethereum.request({
@@ -122,7 +87,6 @@ export default function NavBar() {
       console.error("Install metamask OR unable to call", error);
     }
   };
-
   const getTokenBalance = async (address) => {
     try {
       // Fetch Token Balance
@@ -153,14 +117,25 @@ export default function NavBar() {
       console.log(tokenBalance);
     } catch (error) {
       console.error("Error fetching token balance:", error);
-      // Optionally, provide user feedback here
+    }
+  };
+
+  const checkNetwork = async () => {
+    try {
+      const network = await provider.getNetwork();
+
+      const isAmoyNetwork = network.chainId === 80002;
+      if (!isAmoyNetwork) {
+        alert(`Change your network to Amoy Testnet`);
+      }
+    } catch (error) {
+      console.error("Unable to call checkNetwork function", error);
     }
   };
 
   useEffect(() => {
     ConnectWallet();
-  }, [userAddress]); // Empty dependency array to run only once on mount
-
+  }, [userAddress]);
   return (
     <nav className="py-5 px-12 flex justify-between items-center">
       <Link href="/">

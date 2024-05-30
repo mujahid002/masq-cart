@@ -1,36 +1,51 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Product from "../components/Product";
-import { products } from "../data/products";
+import { getDeposits, products } from "../data/products";
 import { useGlobalContext } from "../context/Store";
 import { getPrices } from "../data/products"; // Assuming this is the correct import for getPrices
+import { WithdrawMasq, WithdrawMatic } from "../components/Withdraw";
+import { mQartContractWithProvider } from "../constants";
 
+import { ethers } from "ethers";
 export default function Home() {
   const {
-    cartCount,
+    orderId,
     maticPrice,
     masqPrice,
-    setShouldDisplayCart,
-    removeItemFromCart,
     setMaticPrice,
     setMasqPrice,
+    maticDeposits,
+    setMaticDeposits,
+    masqDeposits,
+    setMasqDeposits,
+    setOrderId,
   } = useGlobalContext();
 
-  useEffect(() => {
-    const fetchPrices = async () => {
-      const prices = await getPrices();
-      if (!prices.error) {
-        setMaticPrice(prices.maticPrice);
-        setMasqPrice(prices.masqPrice);
-      }
-    };
+  const [succesOrders, setSuccessOrders] = useState(0);
 
+  const fetchAll = async () => {
+    const prices = await getPrices();
+    const deposits = await getDeposits();
+    const id = await mQartContractWithProvider.s_orderId();
+    setOrderId(parseFloat(ethers.BigNumber.from(id)));
+    const totalIds = await mQartContractWithProvider.totalSupply();
+    setSuccessOrders(parseFloat(ethers.BigNumber.from(totalIds)));
+    if (!prices.error && !deposits.error) {
+      setMaticDeposits(deposits.maticDeposits);
+      setMasqDeposits(deposits.masqDeposits);
+      setMaticPrice(prices.maticPrice);
+      setMasqPrice(prices.masqPrice);
+    }
+  };
+
+  useEffect(() => {
     // Call the function initially
-    fetchPrices();
+    fetchAll();
 
     // Set up an interval to call the function every 10 seconds
     // const intervalId = setInterval(() => {
-    //   console.log("Calling fetchPrices...");
-    //   fetchPrices();
+    //   console.log("Calling fetchAll...");
+    //   fetchAll();
     // }, 10000);
 
     // // Clear the interval when the component is unmounted
@@ -45,11 +60,29 @@ export default function Home() {
       {products.map((product) => (
         <Product product={product} key={product.id} />
       ))}
+
+      {/* Container to place WithdrawMatic and WithdrawMasq in corners */}
+      <div className="flex justify-center mt-4">
+        Total Matic: {maticDeposits}
+      </div>
+      <div className="flex justify-center mt-4">
+        <WithdrawMatic />
+      </div>
+      <div className="flex  justify-center mt-4">
+        Total Masq: {masqDeposits}
+      </div>
+      <div className="flex justify-center mt-4">
+        <WithdrawMasq />
+      </div>
+
       {/* Note component */}
       <div className="col-span-full text-center mt-4">
+        <p>Current Order: {orderId}</p>
+        <p>Succesfull Orders: {succesOrders}</p>
         <p>1 Matic ~ ${maticPrice}</p>
         <p>1 Masq ~ ${masqPrice}</p>
       </div>
+
       <div className="col-span-full text-center mt-4">
         <p>
           Note: Prices of products are assumed for testing purposes in USD and
