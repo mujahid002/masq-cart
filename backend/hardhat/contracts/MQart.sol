@@ -115,7 +115,7 @@ contract MQart is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     /// @notice Allows the owner to withdraw all native cryptocurrency from the contract.
     function withdraw() public onlyOwner {
-        (bool checkWithdraw, ) = address(this).call{
+        (bool checkWithdraw, ) = payable(msg.sender).call{
             value: address(this).balance
         }("");
         if (!checkWithdraw) revert MQart__WithdrawFailed();
