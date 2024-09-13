@@ -83,7 +83,7 @@ export default function MasqCheckOut({ amount }) {
       );
 
       const trx = await tMasqContract.approve(MQART_ADDRESS, requiredApproval);
-      await trx.wait();
+      trx.status;
       console.log("the trx for approval is", trx);
       return true;
     } catch (error) {
